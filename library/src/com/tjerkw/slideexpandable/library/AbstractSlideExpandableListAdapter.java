@@ -1,5 +1,7 @@
 package com.tjerkw.slideexpandable.library;
 
+import android.graphics.Rect;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.SparseIntArray;
@@ -8,6 +10,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import java.util.BitSet;
 
@@ -54,12 +57,18 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 	 */
 	private final SparseIntArray viewHeights = new SparseIntArray(10);
 
+    /**
+     * this is points to listView
+     */
+    private ViewGroup parent;
+
 	public AbstractSlideExpandableListAdapter(ListAdapter wrapped) {
 		super(wrapped);
 	}
 
 	@Override
 	public View getView(int position, View view, ViewGroup viewGroup) {
+        parent = viewGroup;
 		view = wrapped.getView(position, view, viewGroup);
 		enableFor(view, position);
 		return view;
@@ -241,6 +250,38 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 				type
 		);
 		anim.setDuration(getAnimationDuration());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+            anim.setAnimationListener(new Animation.AnimationListener() {
+
+                @Override
+                public void onAnimationStart(Animation animation) {}
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    if (type == ExpandCollapseAnimation.EXPAND) {
+                        if (parent instanceof ListView) {
+                            ListView listView = (ListView) parent;
+                            int movement = target.getBottom();
+                            Rect r = new Rect();
+                            boolean visible = target.getGlobalVisibleRect(r);
+                            Rect r2 = new Rect();
+                            listView.getGlobalVisibleRect(r2);
+                            if (!visible) {
+                                listView.smoothScrollBy(movement, 1000);
+                            } else {
+                                if (r2.bottom == r.bottom) {
+                                    listView.smoothScrollBy(movement, 1000);
+                                }
+                            }
+                        }
+                    }
+
+                }
+            });
+        }
 		target.startAnimation(anim);
 	}
 
