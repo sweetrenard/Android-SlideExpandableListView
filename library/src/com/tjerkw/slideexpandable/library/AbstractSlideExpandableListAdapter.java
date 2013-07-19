@@ -334,6 +334,10 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 	}
 
 	private static void writeBitSet(Parcel dest, BitSet set) {
+        android.util.Log.d("ABSTRACT_SLIDE_ELA", String.format("Parcel dest: %s, BitSet set: %s", dest, set));
+        if (set == null) {
+            return;
+        }
 		int nextSetBit = -1;
 
 		dest.writeInt(set.cardinality());
