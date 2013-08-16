@@ -347,7 +347,7 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 	 * The actual state class
 	 */
 	static class SavedState extends View.BaseSavedState {
-		public BitSet openItems = null;
+		public BitSet openItems = new BitSet();
 		public int lastOpenPosition = -1;
 
 		SavedState(Parcelable superState) {
@@ -356,15 +356,19 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 
 		private SavedState(Parcel in) {
 			super(in);
-			in.writeInt(lastOpenPosition);
-			writeBitSet(in, openItems);
+            openItems = readBitSet(in);
+            lastOpenPosition = in.readInt();
+			//in.writeInt(lastOpenPosition);
+			//writeBitSet(in, openItems);
 		}
 
 		@Override
 		public void writeToParcel(Parcel out, int flags) {
-			super.writeToParcel(out, flags);
-			lastOpenPosition = out.readInt();
-			 openItems = readBitSet(out);
+			//super.writeToParcel(out, flags);
+			//lastOpenPosition = out.readInt();
+            //openItems = readBitSet(out);
+            writeBitSet(out, openItems);
+            out.writeInt(lastOpenPosition);
 		}
 
 		//required field that makes Parcelables from a Parcel
