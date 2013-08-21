@@ -4,6 +4,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,7 +50,8 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 	 *
 	 * If an item onj position x is open, its bit is set
 	 */
-	private BitSet openItems = new BitSet();
+	//private BitSet openItems = new BitSet();
+    private SparseBooleanArray openItems = new SparseBooleanArray();
 	/**
 	 * We remember, for each collapsable view its height.
 	 * So we dont need to recalculate.
@@ -201,19 +203,22 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 							? ExpandCollapseAnimation.COLLAPSE
 							: ExpandCollapseAnimation.EXPAND;
 
-					// remember the state
+					/*// remember the state
 					if (type == ExpandCollapseAnimation.EXPAND) {
-						openItems.set(position, true);
+						//openItems.set(position, true);
+                        openItems.put(position, true);
 					} else {
-						openItems.set(position, false);
-					}
+						//openItems.set(position, false);
+					}*/
+                    openItems.put(position, type == ExpandCollapseAnimation.EXPAND);
 					// check if we need to collapse a different view
 					if (type == ExpandCollapseAnimation.EXPAND) {
 						if (lastOpenPosition != -1 && lastOpenPosition != position) {
 							if (lastOpen != null) {
 								animateView(lastOpen, ExpandCollapseAnimation.COLLAPSE);
 							}
-							openItems.set(lastOpenPosition, false);
+							//openItems.set(lastOpenPosition, false);
+                            openItems.put(lastOpenPosition, false);
 						}
 						lastOpen = target;
 						lastOpenPosition = position;
@@ -298,7 +303,8 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 			if(lastOpen != null) {
 				animateView(lastOpen, ExpandCollapseAnimation.COLLAPSE);
 			}
-			openItems.set(lastOpenPosition, false);
+			//openItems.set(lastOpenPosition, false);
+            openItems.put(lastOpenPosition, false);
 			lastOpenPosition = -1;
 			return true;
 		}
@@ -347,7 +353,8 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 	 * The actual state class
 	 */
 	static class SavedState extends View.BaseSavedState {
-		public BitSet openItems = new BitSet();
+		//public BitSet openItems = new BitSet();
+        public SparseBooleanArray openItems = new SparseBooleanArray();
 		public int lastOpenPosition = -1;
 
 		SavedState(Parcelable superState) {
@@ -356,7 +363,8 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 
 		private SavedState(Parcel in) {
 			super(in);
-            openItems = readBitSet(in);
+            //openItems = readBitSet(in);
+            openItems = in.readSparseBooleanArray();
             lastOpenPosition = in.readInt();
 			//in.writeInt(lastOpenPosition);
 			//writeBitSet(in, openItems);
@@ -364,10 +372,11 @@ public abstract class AbstractSlideExpandableListAdapter extends WrapperListAdap
 
 		@Override
 		public void writeToParcel(Parcel out, int flags) {
-			//super.writeToParcel(out, flags);
+			super.writeToParcel(out, flags);
 			//lastOpenPosition = out.readInt();
             //openItems = readBitSet(out);
-            writeBitSet(out, openItems);
+            //writeBitSet(out, openItems);
+            out.writeSparseBooleanArray(openItems);
             out.writeInt(lastOpenPosition);
 		}
 
